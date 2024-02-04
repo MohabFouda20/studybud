@@ -1,2 +1,14 @@
 <a href="/"> <h1>home</h1> </a>
-<a href="/room"> <h1>room</h1> </a>
+
+{% comment %} <a href="/room"> <h1>room</h1> </a> {% endcomment %}
+
+<form method= "GET" action="{% url 'home' %}">
+
+    <input type="text" name="q" placeholder = "Search Room ...">
+</form>
+{% if request.user.is_authenticated %}
+    <a href="{% url 'logout' %}">logout</a>
+{% else %}
+<a href="{% url 'login' %}"> Login</a>
+{% endif %}
+<hr>
