@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-from .models import Room, Topic
+from .models import Room, Topic , Message
 from .forms import RoomForm
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate , login ,logout
@@ -17,7 +17,7 @@ def loginpage(request):
         return redirect('home')
     
     if request.method=='POST':
-        username = request.POST.get('username').lower()
+        username = request.POST.get('username')#.lower()
         password= request.POST.get('password')
         try :
             user=User.objects.get(username=username)
@@ -74,14 +74,22 @@ def home(request):
 
 def room(request,pk):
     room =Room.objects.get(id=pk)
-    # for i in rooms:      # before the database and models 
-    #     if i['id'] == int (pk):
-    #         room =i
-    context= {'room':room}
+    body = request.POST.get('body')
+    room_messages = room.message_set.all().order_by('-created')
+    participants = room.participants.all()
+    if request.method == 'POST':
+        message = Message.objects.create(
+            user = request.user,
+            room = room,
+            body= body
+        )
+        room.participants.add(request.user)
+        return redirect('room' , pk=room.id)
     
     
+    context= {'room':room ,'room_messages': room_messages ,'participants':participants}
     return render(request,'base/room.html', context)
-# Create your views here.
+
 
 
 
@@ -103,7 +111,8 @@ def updateRoom(request , pk):
     room = Room.objects.get(id=pk)
     form = RoomForm(instance=room)
     if request.user!= room.host:
-        return HttpResponse('you are not allowed')
+        return HttpResponse('you are not the creator for this room')
+        
         
     
     if request.method =='POST':
@@ -127,3 +136,14 @@ def deleteRoom(request,pk):
         return redirect('home')
     return render(request ,'base/delete.html', {'obj':room})
 
+@login_required(login_url= 'login')
+def deleteMessage(request,pk):
+    message=Message.objects.get(id=pk)
+    if request.user!= message.user:
+        return HttpResponse('you are not allowed')
+    
+    
+    if request.method=='POST':
+        message.delete()
+        return redirect('home')
+    return render(request ,'base/delete.html', {'obj':message})
