@@ -1,0 +1,21 @@
+{% extends "main.html" %} {% block content %} {% comment %}
+<h1>homiieee</h1>
+{% endcomment %}
+<style>
+  .homeContainer {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+  }
+</style>
+
+<div class="homeContainer">
+  <div>{% include "base/topics_comp.html" %}</div>
+  <div>
+    <h5>{{rooms_count}} is now availiable</h5>
+    <h2><a href="{% url 'create-room' %}"> create room</a></h2>
+
+    <div>{% include "base/feed_comp.html" %}</div>
+  </div>
+  <div>{% include "base\activity_comp.html" %}</div>
+</div>
+{% endblock content %}
